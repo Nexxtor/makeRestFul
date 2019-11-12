@@ -811,3 +811,46 @@ En la base de datos este objeto, sin comentarios, se ve almacenado, así:
 }
 ~~~
 
+## Creando controladores
+
+En los controladores se programan las acciones que se van a relizar, como por ejemplo crear, guardar, actulizar e eliminar un recurso. Este sera el único lugar de nuestro aplicación que debe tener acceso a la base de datos y lo tiene que hacer haciendo el uso de los modelos.
+
+Los controladores se suelen crear con la idea que son resposable de administrar solamente un recurso. En este caso serán necesario crear dos controladores: **UserController** y **PostController**
+
+Los controladores se ubicaran en nuestro proyecto en la carpeta **controllers** y nuestra carpeta de proyecto tendra la siguiente forma hasta el momento:
+
+![Estructura](asset/images/struct_proyect.png)
+
+Crearemos primero el archivo **UserController.js** y dentro definiremos un modulo de node.js. Para crear un modulo, solamente es necesario definir que exportaremos del archivo, para que este disponible por cualquiera que importe nuestro modulo. Por ejemplo si:
+
+~~~
+exports.name = () => { return "dato" }
+~~~
+
+la función estara disponible con el nombre **name**. si escribirmos
+
+~~~
+module.exports = { propiedad: function() {} }
+~~~
+
+exportamos un objeto completo, cada propiedad de este objeto se accesible por su nombre desde otro archivo.
+
+En el controlador de Usuario definiremos 5 acciones:
+
+1. Buscar un usuario por su username
+2. Obtener todos los usuarios
+3. Crear un usuario nuevo
+4. Actualizar un usuario existente
+5. Eliminar un usuario
+
+Estas tres acciones seran solicitadas a traves de peticiones HTTP y a un path en espesifico asi:
+
+|    Accion     | Metod  |       PATH       |                                     OPTIONS                                     |
+| :-----------: | :----: | :--------------: | :-----------------------------------------------------------------------------: |
+|    Buscar     |  GET   | /users/:username |                                    username                                     |
+| Obtener todos |  GET   |      /users      | Query size, page. size cantidad de usuarios, page número de la página a mostrar |
+|     Crear     |  POST  |      /users      |                                    data User                                    |
+|  Actualizar   |  PUT   | /users/:username |                                    username                                     |
+|   Eliminar    | DELETE | /users/:username |                                    username                                     |
+
+
