@@ -1,4 +1,32 @@
 # Crear un RestFul con Express y MongoDB
+- [Crear un RestFul con Express y MongoDB](#crear-un-restful-con-express-y-mongodb)
+  - [RestFul API](#restful-api)
+    - [Definición](#definici%c3%b3n)
+    - [Ventajas](#ventajas)
+    - [Desventajas](#desventajas)
+  - [Objetivo](#objetivo)
+  - [Recursos necesarios](#recursos-necesarios)
+- [Preparando el entorno](#preparando-el-entorno)
+  - [Estructura de directorio](#estructura-de-directorio)
+  - [Una tonelada de librerías I](#una-tonelada-de-librer%c3%adas-i)
+- [Iniciando el proyecto](#iniciando-el-proyecto)
+  - [Instalación de express-generator](#instalaci%c3%b3n-de-express-generator)
+- [Creación de proyecto](#creaci%c3%b3n-de-proyecto)
+- [Conectando Express con MongoDB](#conectando-express-con-mongodb)
+  - [Conceptos básicos de MongoDB](#conceptos-b%c3%a1sicos-de-mongodb)
+  - [ODM... ¿qué?](#odm-%c2%bfqu%c3%a9)
+  - [Mongoose](#mongoose)
+  - [Instalando Moongose](#instalando-moongose)
+  - [Conexión con el servidor de MongoDB](#conexi%c3%b3n-con-el-servidor-de-mongodb)
+    - [Promesas VS Callbacks](#promesas-vs-callbacks)
+  - [Definiendo modelos en Mongoose](#definiendo-modelos-en-mongoose)
+- [Creando controladores](#creando-controladores)
+  - [Buscar un usuario](#buscar-un-usuario)
+  - [Listar usuarios](#listar-usuarios)
+  - [Creación de un usuario](#creaci%c3%b3n-de-un-usuario)
+  - [Actualización de un usuario](#actualizaci%c3%b3n-de-un-usuario)
+  - [Eliminar un usuario](#eliminar-un-usuario)
+- [Añadiendo las rutas (routers) para ejecutar los controladores](#a%c3%b1adiendo-las-rutas-routers-para-ejecutar-los-controladores)
 
 ## RestFul API
 
@@ -550,12 +578,12 @@ npm install dotenv
 Luego es necesario crear el archivo **.env** en la carpeta blog con el siguiente contenido:
 
 ~~~
-# URI for MongoDB Server
-MONGO_URI=mongodb+srv://user:password@localhost:27017/db
-# Sever Port
-PORT=3000
-# Active all debug messages 
-DEBUG=blog:*
+  
+  MONGO_URI=mongodb+srv://user:password@localhost:27017/db
+  
+  PORT=3000
+
+  DEBUG=blog:*
 ~~~
 
 Luego en el archivo  **bin/www** añadir en la primera línea:
@@ -814,7 +842,7 @@ En la base de datos este objeto, sin comentarios, se ve almacenado así:
 }
 ~~~
 
-## Creando controladores
+# Creando controladores
 
 En los controladores se programan las acciones que se van a realizar, como por ejemplo crear, guardar, actualizar e eliminar un recurso. Este sera el único lugar de nuestro aplicación que debe tener acceso a la base de datos y lo tiene que hacer utilizando los modelos definidos anteriormente.
 
@@ -863,7 +891,7 @@ var User = require('../models/user');
 var debug = require('debug')('blog:user_controller');
 ~~~
 
-#### Buscar un usuario
+## Buscar un usuario
 
 Para buscar un usuario, lo haremos a través del modelo usuario ejecutando el metodo **findOne**, que dado un criterio de busqueda nos devuelve el primer elemento que encuentre, además en las opciones de **findOne** indicaremos que no queremos seleccionar el **password** ni **login_count** por motivos de seguridad. 
 
@@ -925,7 +953,7 @@ además se indica que en caso de error se ejecute el siguiente **middleware**:
 });
 ~~~
 
-#### Listar usuarios
+## Listar usuarios
 
 Igual que la busqueda de un usuario, tendremos tres parámetros, solo que esta vez las opciones de filtro de usuarios las obtendremos de la **Query** especificada en la **URL**.
 La **query** esta conformado por clave-valor indicados al final de la URL con el simbolo **?** así:
@@ -990,7 +1018,7 @@ var sortProperty = req.query.sortby || "createdAt",
 
 que por defecto es la fecha de creación y un orden descendente
 
-#### Creación de un usuario
+## Creación de un usuario
 
 Para crear un usuario, lo haremos a través del método **POST** lo que hara que en la propiedad **req.body** estarán disponibles los datos a almacenar. Lo primero que haremos es buscar sí el usuario que se desea crear existe previamente, de existir generaremos el error:  "El usuario ya existe" , sino existe almacenaremos los datos. Veremos luego la forma adecuada de almacenar la contraseña de manera segura.
 
@@ -1062,7 +1090,7 @@ La **Promise** que concatenaremos es la que se ejecuta cuando el usuario fue alm
 
 El estado de respuesta de la petición usara el código **201 Created** que indica que la solicitud ha tenido éxito y se ha creado el recurso en el sistema.
 
-#### Actualización de un usuario
+## Actualización de un usuario
 
 Para actualizar un usuario utilizaremos el método **PUT** que semanticamente esta destinado a permitir actualizar cada uno de los campos de nuestro usuario. Cuando el usuario este actualizado retornaremos el nuevo documento, en dado caso no sea posible actualizar por un **username** incorrecto, devolvermos **null**.
 
@@ -1128,7 +1156,7 @@ Para el primer caso en el  **callback** retornamos el objeto **update** y códig
 })
 ~~~
 
-#### Eliminar un usuario
+## Eliminar un usuario
 
 Para eliminar un usuario utilizaremos el método **delete** y en el **PATH** necesitaremos el **username**, cuando la operación sea existosa retornaremos el usuario eliminado y el código **200**, en el caso que ya este eliminado el recurso retornaremos el código **404**:
 
@@ -1149,7 +1177,7 @@ module.exports.delete = (req, res, next) => {
 }
 ~~~
 
-## Añadiendo las rutas (routers) para ejecutar los controladores
+# Añadiendo las rutas (routers) para ejecutar los controladores
 
 Las **rutas (routers)** son elementos que nos permiten decirle a **express**, que ejecutar de acuerdo a la petición del cliente o usuario. Para poder configurar una ruta son necesarias tres cosas:
 
