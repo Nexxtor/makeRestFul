@@ -68,7 +68,7 @@ Para poder acelerar la creación del RESTFull utilizaremos un microframework lla
 
 Para crear una aplicación usando express basta con importar la libreria, configurar el puerto donde escuchará, y finalmente establecer que hacer en caso de acceder a alguna ruta del sitio. En el siguiente código se puede observar la estructura en una página web que muestra una de las frase más conocidas en el mundo del desarrollo: "Hello World!".
 
-```
+```js
 const express = require('express')
 const app = express()
 const port = 3000
@@ -148,7 +148,7 @@ Esta es una tarea repetitiva que se realiza en cada nuevo proyecto. Algo realmen
 ## Instalación de express-generator
 
 Para poder generar un proyecto base de express con el paquete **express-generator** se debe instalar de manera global usando **npm**.
-~~~
+~~~BASH
 npm install express-generator -g
 ~~~
 
@@ -158,7 +158,7 @@ express -h
 ~~~
 Dando como resultado la ayuda del comando:
 
-~~~
+~~~bash
   Usage: express [options] [dir]
 
   Options:
@@ -188,7 +188,7 @@ Que nos creará una carpeta llamada **blog** con la estructura de directorios de
 
 Probablemente en el directorio no se encuentre la carpeta **node_modules**, y es por que hace falta ejecutar el comando de instalación de las librerías definidas en el archivo **package.json**  que contiene las dependencias de nuestro proyecto:
 
-~~~
+~~~JSON
   "dependencies": {
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -222,14 +222,14 @@ npm install nodemon --save-dev
 
 Y en el archivo **package.json**, modificar:
 
-~~~
+~~~JSON
   "scripts": {
     "start": "node ./bin/www"
   },
 ~~~
 
 por esto 
-~~~
+~~~JSON
   "scripts": {
     "start": "nodemon ./bin/www"
   },
@@ -240,7 +240,7 @@ DEBUG=blog:* npm start
 ~~~
 
 Y en consola se puede observar:
-~~~
+~~~js
 [nodemon] 1.19.4
 [nodemon] to restart at any time, enter `rs`
 [nodemon] watching dir(s): *.*
@@ -264,7 +264,7 @@ npm install mongodb
 
 Código fuente de conexión a una base de datos mongo y la obtención de todos los documentos de la colección **mammals**.
 
-~~~
+~~~JS
 var MongoClient = require('mongodb').MongoClient
 
 MongoClient.connect('mongodb://localhost:27017/animals', function (err, client) {
@@ -294,7 +294,7 @@ Para poder utilizar MongoDB, es necesario entender algunos conceptos:
     - Las claves son sensible a mayúsculas.
     - Todo documento tine una clave _id asignada automáticamente y única en toda la colección.
     - Las claves no se pueden duplicar.
-    ~~~
+    ~~~JSON
         {
             "name": "nestor",
             "lastname": "aldana",
@@ -306,7 +306,7 @@ Para poder utilizar MongoDB, es necesario entender algunos conceptos:
   - Es identificada por un nombre.
   - Permite el uso de un esquema libre.
     - Esquema libre significa que los documentos de una misma colección pueden tener estructuras diferentes. Por ejemplo, estos dos documentos pueden formar parte de la misma colección:
-    ~~~
+    ~~~json
         {
             "name": "nestor",
             "lastname": "aldana",
@@ -315,7 +315,7 @@ Para poder utilizar MongoDB, es necesario entender algunos conceptos:
         }
 
         {
-            fullname: "Douglas Hernandez"
+            "fullname": "Douglas Hernandez"
         }
     ~~~
     - Lo anterior no es recomendable, ya que podría ser un infierno manejar diferentes estructuras, pero con la práctica se podrá entender que esta flexibilidad bien manejada aporta mucha utilidad
@@ -366,7 +366,7 @@ Cada SchemaType permite definir:
 Los SchemaType permiten definir algunas otras propiedades, es recomendable consultar cada uno de ellos en la documentación de mongoose. A continua
 ción un ejemplo de definir una **Thing**:
 
-~~~
+~~~JS
 // Definir las propiedades de un documento de mongoDB usando mongoose
 var schema = new Schema({ // El objeto Schema pertenece a mongoose
   name:    String, // SchemType
@@ -412,7 +412,7 @@ npm install mongoose --save
 
 Con esto se tendrá disponible la librería en todo el proyecto, no esta de más comparar que en el archivo package.json se muestre claramente la dependencia, y hasta el momento el archivo debe verse:
 
-~~~
+~~~JSON
 {
   "name": "blog",
   "version": "0.0.0",
@@ -440,7 +440,7 @@ Con esto se tendrá disponible la librería en todo el proyecto, no esta de más
 
 En el archivo **app.js**  hacer le siguiente import:
 
-~~~
+~~~JS
 var mongoose = require('mongoose');
 ~~~
 
@@ -458,7 +458,7 @@ Un callback en pocas palabras es una función que se pasa por parámetro a otra 
 
 El siguiente código obtiene datos de un formulario y los envía a un servidor y muestra el estado de la respuesta:
 
-~~~
+~~~JS
 document.querySelector('form').onsubmit = formSubmit
 
 function formSubmit (submitEvent) {
@@ -481,7 +481,7 @@ Es de notar como la función **postResponse**  es pasada como parámetro a la fu
 
 Las promesas hacen uso del concepto de callbacks pero nos lo presenta de una manera diferente y no añaden la función de concatenar acciones. Primero las Promises son creadas a partir de un objeto JS:
 
-~~~
+~~~JS
 var myPromise = new Promise(function (resolve, reject) {
     if (2 > 2) {
         resolve(':)');
@@ -493,7 +493,7 @@ var myPromise = new Promise(function (resolve, reject) {
 
 y como se puede observar en el código el objeto Promesa recibe una función con dos parámetros **resolve** y **reject**, para poder ejecutar la promesa se debe usar el método then y enviar ambos parámetros solicitados:
 
-~~~
+~~~JS
 myPromise.then(function (result) {
     // Resolve callback.
     console.log(result); 
@@ -505,7 +505,7 @@ myPromise.then(function (result) {
 
 Hasta el momento todo parece solo una forma de complicar el conceptos de callbacks, pero lo útil es usar promesas en cadena, por ejemplo:
 
-~~~
+~~~JS
 fetch('/article/promise-chaining/user.json')
   .then(response => response.json())
   .then(user => fetch(`https://api.github.com/users/${user.name}`))
@@ -531,7 +531,7 @@ El código escrito arriba permite leer de manera secuencial tareas que suceden d
 
 Es de notar que a ninguna de las llamadas a **then** se le envió el segundo parámetro, que indica qué hacer en caso de error, para seguir manteniedo el concepto de legibilidad existe el método catch que permite definir qué hacer en caso de error.
 
-~~~
+~~~JS
 myPromise
   .then(function (result) {
       // Resolve callback.
@@ -548,7 +548,7 @@ En conclusión ambos conceptos nos sirven para ejecutar tareas asíncronas y man
 
 Para conectarse con moongosee podemos usar Promise o callback:
 
-~~~
+~~~JS
 
 // Callback 
 
@@ -578,36 +578,33 @@ npm install dotenv
 Luego es necesario crear el archivo **.env** en la carpeta blog con el siguiente contenido:
 
 ~~~
-  
   MONGO_URI=mongodb+srv://user:password@localhost:27017/db
-  
   PORT=3000
-
   DEBUG=blog:*
 ~~~
 
 Luego en el archivo  **bin/www** añadir en la primera línea:
 
-~~~
+~~~JS
 require('dotenv').config();
 ~~~
 
 En el archivo **app.js** asegurar importar mongoose y la librería debug para mostrar mensajes de debug:
 
-~~~
+~~~JS
 var mongoose = require('mongoose');
 var debug = require('debug')('blog:database');
 ~~~
 
 Y además añadir la conexión antes de la línea:
 
-~~~ 
+~~~ JS
 var app = express(); 
 ~~~
 
 usando el siguiente código:
 
-~~~
+~~~JS
 // Conect to database
 
 mongoose.connect(process.env.MONGO_URI, {
@@ -632,7 +629,7 @@ npm start
 ~~~
 
 Obtendremos:
-~~~
+~~~js
 > nodemon ./bin/www
 
 [nodemon] 1.19.4
@@ -675,7 +672,7 @@ Como podrán notar tendremos dos colecciones: usuarios y posts, los comentarios 
 
 Para definir los modelos, empezaremos por los usuarios creando en la carpeta model el archivo **user.js** con el siguiente código:
 
-~~~
+~~~JS
 const mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
@@ -709,7 +706,7 @@ Las propiedades username, email, password han sido definidas con el type String 
 
 Además notar el segundo parámetro del pasado al Objeto Schema, este nos permite definir opciones para que mongoose nos ayude con tareas comunes, en este caso con la definición de las propiedades createdAt and updatedAt, que guardan la hora de creación y modificación de nuestro usuario, un usuario insertado en la base de datos se verá así:
 
-~~~
+~~~JSON
 {
   "_id": {
     "$oid":"5dc9bb1db6e7a85a62fd95e5"
@@ -740,7 +737,7 @@ Además notar el segundo parámetro del pasado al Objeto Schema, este nos permit
 
 Para Insertar un documento con moongose, es necesario importar el modelo, luego crear un nuevo objeto y finalmente ejecutar el metodo **save**.
 
-~~~
+~~~JS
 
 var User = require("./models/user"); // Importa modelo
 
@@ -758,7 +755,7 @@ new User({
 
 Antes de continuar con la manipulación de datos es necesario definir el modelo post, en el archivo **post.js** dentro de la carpeta models, con el siguiente código:
 
-~~~
+~~~JS
 const mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
@@ -795,7 +792,7 @@ module.exports = mongoose.model("Post", PostSchema);
 
 Para poder referenciar, otros documentos, al estilo base de datos relacional podemos configurar un objeto como de tipo referencias, además dando el nombre del modelo a referenciar:
 
-~~~
+~~~JS
 author: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -805,7 +802,7 @@ author: {
 
 Y si deseamos limitar a una lista de valores, el contenido de una propiedad, podemos hacerlo definiendo una propiedad enum:
 
-~~~
+~~~ js
 state: {
     type: String,
     enum: ['draft', 'published', 'private']
@@ -814,7 +811,7 @@ state: {
 
 En la base de datos este objeto, sin comentarios, se ve almacenado así:
 
-~~~
+~~~json
 {
   "_id": {
       "$oid":"5dc9c4d4a4ed0f66e1540999"
@@ -854,13 +851,13 @@ Los controladores se ubicaran en nuestro proyecto en la carpeta **controllers** 
 
 Crearemos primero el archivo **UserController.js** y dentro definiremos un modulo de node.js. Para crear un modulo, solamente es necesario definir que exportaremos del archivo, para que esté disponible para cualquiera que importe nuestro modulo. Por ejemplo si:
 
-~~~
+~~~js
 exports.name = () => { return "dato" }
 ~~~
 
 la función estara disponible con el nombre **name**. si escribimos:
 
-~~~
+~~~js
 module.exports = { propiedad: function() {} }
 ~~~
 
@@ -886,7 +883,7 @@ Estas tres acciones seran solicitadas a traves de peticiones **HTTP** y a un **p
 
 Para lograr las acciones en el archivo **UserController.js** importar:
 
-~~~
+~~~js
 var User = require('../models/user');
 var debug = require('debug')('blog:user_controller');
 ~~~
@@ -903,7 +900,7 @@ La función a declarar tendra tres parámetros:
 
 El código queda así:
 
-~~~
+~~~js
 // Search a one user y database
 module.exports.getOne = (req, res, next) => {
     debug("Search User", req.params);
@@ -926,19 +923,19 @@ El primer parámetro de **findOne** recibe un objeto con las opciones de búsque
 El **username** estara ubicado en el **PATH** de consulta **/users/:username** para acceder a ese parámetro
 utilizaremos la propiedad **params**
 
-~~~
+~~~js
 {  username: req.params.username }
 ~~~
 
 donde cada propiedad de ese objeto debe llamarse igual a la propiedad por la que se quiere buscar, en este caso **username**.
 Como segundo parametro se encuentra una cadena de texto, que nos permite indicar que propiedades se desean seleccionar del objeto **user**, además se puede indicar cuales propiedade no se desean seleccionar,esto se logra al anteponer un guión antes de la propiedad. Las propiedades deben ir separadas por espacio.
 
-~~~
+~~~js
 "-password -login_count"
 ~~~
 
 Por último se le asigna a la **Promise** retornada por **findOne** la acción de: Si encuentra el usuario, retornalo en formato **JSON**, si el **user** no existe retorna código **404** con **null**,
-~~~
+~~~js
 if (foundUser)
     return res.status(200).json(foundUser);
 else
@@ -947,7 +944,7 @@ else
 
 además se indica que en caso de error se ejecute el siguiente **middleware**:
 
-~~~
+~~~js
 .catch(err => {
     next(err);
 });
@@ -979,7 +976,7 @@ Para permitir al usuario cambiar la configuración por defecto, leeremos de **Qu
 
 Todos los parámetos son totalmente opcionales. Nuestra función de buscar **todos** tendrá la siguiente forma:
 
-~~~
+~~~js
 module.exports.getAll = (req, res, next) => {
     var perPage = Number(req.query.size) || 10,
         page = req.query.page > 0 ? req.query.page : 0;
@@ -1004,14 +1001,14 @@ module.exports.getAll = (req, res, next) => {
 
 Primero definimos el tamaño de la página y la página que se quiere obtener, por defecto un tamaño de  10 y la página 0
 
-~~~
+~~~js
 var perPage = Number(req.query.size) || 10,
     page = req.query.page > 0 ? req.query.page : 0;
 ~~~
 
 luego obtemos la propiedad para ordenar y el criterio
 
-~~~
+~~~js
 var sortProperty = req.query.sortby || "createdAt",
     sort = req.query.sort || "desc";
 ~~~
@@ -1022,7 +1019,7 @@ que por defecto es la fecha de creación y un orden descendente
 
 Para crear un usuario, lo haremos a través del método **POST** lo que hara que en la propiedad **req.body** estarán disponibles los datos a almacenar. Lo primero que haremos es buscar sí el usuario que se desea crear existe previamente, de existir generaremos el error:  "El usuario ya existe" , sino existe almacenaremos los datos. Veremos luego la forma adecuada de almacenar la contraseña de manera segura.
 
-~~~
+~~~js
 module.exports.register = (req, res, next) => {
     debug("New User", {
         body: req.body
@@ -1059,7 +1056,7 @@ module.exports.register = (req, res, next) => {
 
 Para almacenar un usuario es necesario crear un objeto **user** a partir del modelo, de la siguiente forma:
 
-~~~
+~~~js
 let newUser = new User({
     username: req.body.username,
     firts_name: req.body.firts_name || "",
@@ -1071,13 +1068,13 @@ let newUser = new User({
 
 Luego ejecutaremos el método **save** y retornamos la **Promise** para permitir concatenar **Promise**
 
-~~~
+~~~js
 return newUser.save();
 ~~~
 
 La **Promise** que concatenaremos es la que se ejecuta cuando el usuario fue almacenado el la base de datos:
 
-~~~
+~~~js
 .then(user => { // Con el usario almacenado retornamos que ha sido creado con exito
     return res
         .header('Location', '/users/' + user._id)
@@ -1094,7 +1091,7 @@ El estado de respuesta de la petición usara el código **201 Created** que indi
 
 Para actualizar un usuario utilizaremos el método **PUT** que semanticamente esta destinado a permitir actualizar cada uno de los campos de nuestro usuario. Cuando el usuario este actualizado retornaremos el nuevo documento, en dado caso no sea posible actualizar por un **username** incorrecto, devolvermos **null**.
 
-~~~
+~~~js
 module.exports.update = (req, res, next) => {
     debug("Update user", {
         username: req.params.username,
@@ -1123,7 +1120,7 @@ module.exports.update = (req, res, next) => {
 
 Al estar en un método **PUT** los datos podrán ser accesible desde **req.body**, usaremos esos datos para crear un objeto con los nuevos valores de nuestro usuario:
 
-~~~
+~~~js
     let update = {
         ...req.body
     };
@@ -1132,7 +1129,7 @@ Al estar en un método **PUT** los datos podrán ser accesible desde **req.body*
 Los tres puntos, le dicen a **JS** que tome cada propiedad del **req.body** y lo guarde como una propiedad del objeto update, practicamente copiamos el objeto.
 
 Luego buscamos en la base de datos con el **username** indicado en el **PATH** de la petición. Configurando el método para cuando termine de actualizar, nos retorne el objeto nuevo en la variable **updated**
-~~~
+~~~js
     User.findOneAndUpdate({
             username: req.params.username
         }, update, {
@@ -1147,7 +1144,7 @@ Cuando la tarea se complete tendremos dos casos:
 
 Para el primer caso en el  **callback** retornamos el objeto **update** y código de esta **200** y en el segundo caso un código sw error **400** y **null**.
 
-~~~
+~~~js
 .then((updated) => {
     if (updated)
         return res.status(200).json(updated);
@@ -1160,7 +1157,7 @@ Para el primer caso en el  **callback** retornamos el objeto **update** y códig
 
 Para eliminar un usuario utilizaremos el método **delete** y en el **PATH** necesitaremos el **username**, cuando la operación sea existosa retornaremos el usuario eliminado y el código **200**, en el caso que ya este eliminado el recurso retornaremos el código **404**:
 
-~~~
+~~~js
 module.exports.delete = (req, res, next) => {
 
     debug("Delete user", {
@@ -1214,7 +1211,7 @@ Crearemos un archivo llamado **user.js** en la carpeta **router** y configurarem
 
 Para poder lograrlo es necesario importar **express** y obtener el objeto que permite configurar rutas, además el archivo con las acciones, en nuestro caso el controlador **UsersController**.
 
-~~~
+~~~js
 var express = require('express');
 var router = express.Router();
 var userController = require('../controllers/UserController');
@@ -1222,7 +1219,7 @@ var userController = require('../controllers/UserController');
 
 Para definir la ruta de la primera acción de mostrar todos los usarios escribiremos:
 
-~~~
+~~~js
 router.get('/', userController.getAll);
 ~~~
 A través de método **get** del objeto **router** podemos definir todas las rutas para el método **HTTP** **GET**, como primer parámetro de la función, se indica que la acción **userController.getAll** se ejecutara cuando el usuario acceda a la raíz de nuestra ruta, en el caso de este archivo sera **/users** o **/users/**
@@ -1237,12 +1234,12 @@ Para definir una acción para rutas como:
 
 Es de notar que necesitaremos recuperar lo que varia en ese **PATH** si escribimos como primer parámetro de la función **get** del objeto router ***/:username***  el valor variable sera accesible para la acción a ejecutar usando la propiedad **params** así:
 
-~~~
+~~~js
 req.params.username
 ~~~
 Para lo cual dejamos preparado nuestro controlador de usuario, en la sección de creación de controladores de este artículo. Las rutas que usan el mismo método **HTTP** deben definirse de lo más especifico a lo mas general, por ejemplo:
 
-~~~
+~~~js
 router.get('/:username', userController.getOne);
 router.get('/', userController.getAll);
 ~~~
@@ -1250,14 +1247,14 @@ router.get('/', userController.getAll);
 La primera es mas especifica por que permite añadir un elemento más al **PATH**, si la ruta o **PATH** se hace mas larga ese un buen criterio para definir el orden. 
 
 Advertencia: la siguiente configuraciones de rutas no funcionarán de manera adecuada:
-~~~
+~~~js
 router.get('/:username', userController.getByUser);
 router.get('/:id', userController.getById);
 ~~~
 
 la razón es: No importa si escribimos  **/nextor** o **/100** siempre se ejecutara la primera acción, ya que aunque le asignemos nombre de **username** o **id**, **express** no puede distinguir eso, lo único que permite es indicar que esa parte del **PATH** es variable. Lo correcto para dicha situación es preparar una acción adecuada en nuestro **controller**:
 
-~~~
+~~~js
 router.get('/:criteria', userController.findUser);
 ~~~
 
@@ -1265,13 +1262,13 @@ La función **findUser** debe buscar tanto por **id** como **username**.
 
 Para definir otros método **HTTP**, a usar basta con cambiar el nombre del método y personalizar la ruta, por ejemplo para el método **POST** y el path **/users**
 
-~~~
+~~~js
 router.post('/',userController.register);
 ~~~
 
 finalmente nuestro archivo ubicado en **routers/user.js** deberá verse así:
 
-~~~
+~~~js
 var express = require('express');
 var router = express.Router();
 var userController = require('../controllers/UserController');
@@ -1289,13 +1286,13 @@ module.exports = router;
 
 Al principio de esta sección se menciono que asumimos que dentro del archivo **routers/user.js** estamos configurando la ruta a partir de **/users** para que esto se cumpla es necesario que en el archivo **app.js** importemos nuestra configurion de rutas:
 
-~~~
+~~~js
 var usersRouter = require('./routes/users');
 ~~~
 
 luego decirle a **express** como deberá usarse esta configuración, para eso añadiremos:
 
-~~~
+~~~js
 app.use('/users', usersRouter);
 ~~~
 
