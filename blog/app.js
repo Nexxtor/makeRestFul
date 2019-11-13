@@ -13,8 +13,9 @@ var usersRouter = require('./routes/users');
 // Conect to database
 
 mongoose.connect(process.env.MONGO_URI, {
+  useCreateIndex: true,
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true 
 })
   .then(() => {
     debug("success Coneccted to database")

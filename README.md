@@ -583,8 +583,9 @@ usando el siguiente código:
 // Conect to database
 
 mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+  useCreateIndex: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true 
   })
   .then(() => {
     debug("success Connected to database")
@@ -653,7 +654,8 @@ const mongoose = require('mongoose'),
 var UserSchema = Schema({
     username: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     first_name: String,
     last_name: String,
@@ -814,44 +816,466 @@ En la base de datos este objeto, sin comentarios, se ve almacenado así:
 
 ## Creando controladores
 
-En los controladores se programan las acciones que se van a relizar, como por ejemplo crear, guardar, actulizar e eliminar un recurso. Este sera el único lugar de nuestro aplicación que debe tener acceso a la base de datos y lo tiene que hacer haciendo el uso de los modelos.
+En los controladores se programan las acciones que se van a realizar, como por ejemplo crear, guardar, actualizar e eliminar un recurso. Este sera el único lugar de nuestro aplicación que debe tener acceso a la base de datos y lo tiene que hacer utilizando los modelos definidos anteriormente.
 
-Los controladores se suelen crear con la idea que son resposable de administrar solamente un recurso. En este caso serán necesario crear dos controladores: **UserController** y **PostController**
+Los controladores se suelen crear con la idea que son responsables de administrar solamente un recurso. En este caso serán necesario crear dos controladores: **UserController** y **PostController**
 
-Los controladores se ubicaran en nuestro proyecto en la carpeta **controllers** y nuestra carpeta de proyecto tendra la siguiente forma hasta el momento:
+Los controladores se ubicaran en nuestro proyecto en la carpeta **controllers** y nuestra carpeta de proyecto tendra la siguiente estructura:
 
 ![Estructura](asset/images/struct_proyect.png)
 
-Crearemos primero el archivo **UserController.js** y dentro definiremos un modulo de node.js. Para crear un modulo, solamente es necesario definir que exportaremos del archivo, para que este disponible por cualquiera que importe nuestro modulo. Por ejemplo si:
+Crearemos primero el archivo **UserController.js** y dentro definiremos un modulo de node.js. Para crear un modulo, solamente es necesario definir que exportaremos del archivo, para que esté disponible para cualquiera que importe nuestro modulo. Por ejemplo si:
 
 ~~~
 exports.name = () => { return "dato" }
 ~~~
 
-la función estara disponible con el nombre **name**. si escribirmos
+la función estara disponible con el nombre **name**. si escribimos:
 
 ~~~
 module.exports = { propiedad: function() {} }
 ~~~
 
-exportamos un objeto completo, cada propiedad de este objeto se accesible por su nombre desde otro archivo.
+exportamos un objeto completo, cada propiedad de este objeto es accesible por su nombre desde otro archivo.
 
 En el controlador de Usuario definiremos 5 acciones:
 
-1. Buscar un usuario por su username
+1. Buscar un usuario por su **username**
 2. Obtener todos los usuarios
-3. Crear un usuario nuevo
+3. Crear un usuario
 4. Actualizar un usuario existente
 5. Eliminar un usuario
 
-Estas tres acciones seran solicitadas a traves de peticiones HTTP y a un path en espesifico asi:
+Estas tres acciones seran solicitadas a traves de peticiones **HTTP** y a un **path** en específico así:
 
-|    Accion     | Metod  |       PATH       |                                     OPTIONS                                     |
-| :-----------: | :----: | :--------------: | :-----------------------------------------------------------------------------: |
-|    Buscar     |  GET   | /users/:username |                                    username                                     |
-| Obtener todos |  GET   |      /users      | Query size, page. size cantidad de usuarios, page número de la página a mostrar |
-|     Crear     |  POST  |      /users      |                                    data User                                    |
-|  Actualizar   |  PUT   | /users/:username |                                    username                                     |
-|   Eliminar    | DELETE | /users/:username |                                    username                                     |
+|    Acción     | Método |       PATH       |                                             OPTIONS                                              |
+| :-----------: | :----: | :--------------: | :----------------------------------------------------------------------------------------------: |
+|    Buscar     |  GET   | /users/:username |                                             username                                             |
+| Obtener todos |  GET   |      /users      | Query size, page. size: cantidad de usuarios, page: número de la página a mostrar. sortby y sort |
+|     Crear     |  POST  |      /users      |                                            data User                                             |
+|  Actualizar   |  PUT   | /users/:username |                                             username                                             |
+|   Eliminar    | DELETE | /users/:username |                                             username                                             |
 
+Para lograr las acciones en el archivo **UserController.js** importar:
+
+~~~
+var User = require('../models/user');
+var debug = require('debug')('blog:user_controller');
+~~~
+
+#### Buscar un usuario
+
+Para buscar un usuario, lo haremos a través del modelo usuario ejecutando el metodo **findOne**, que dado un criterio de busqueda nos devuelve el primer elemento que encuentre, además en las opciones de **findOne** indicaremos que no queremos seleccionar el **password** ni **login_count** por motivos de seguridad. 
+
+La función a declarar tendra tres parámetros:
+
+1. **req** Contiene la información de la petición **HTTP**.
+2. **res** Nos permite construir una respuesta **HTTP**.
+3. **next** Callback que permitira invocar al siguiente **middleware**, lo usaremos solamente en dado caso suceda un error, para que le **middleware** de error se encargue de manejarlo.
+
+El código queda así:
+
+~~~
+// Search a one user y database
+module.exports.getOne = (req, res, next) => {
+    debug("Search User", req.params);
+    User.findOne({
+            username: req.params.username
+        }, "-password -login_count")
+        .then((foundUser) => {
+            if (foundUser)
+                return res.status(200).json(foundUser);
+            else
+                return res.status(400).json(null)
+        })
+        .catch(err => {
+            next(err);
+        });
+}
+~~~
+
+El primer parámetro de **findOne** recibe un objeto con las opciones de búsqueda.
+El **username** estara ubicado en el **PATH** de consulta **/users/:username** para acceder a ese parámetro
+utilizaremos la propiedad **params**
+
+~~~
+{  username: req.params.username }
+~~~
+
+donde cada propiedad de ese objeto debe llamarse igual a la propiedad por la que se quiere buscar, en este caso **username**.
+Como segundo parametro se encuentra una cadena de texto, que nos permite indicar que propiedades se desean seleccionar del objeto **user**, además se puede indicar cuales propiedade no se desean seleccionar,esto se logra al anteponer un guión antes de la propiedad. Las propiedades deben ir separadas por espacio.
+
+~~~
+"-password -login_count"
+~~~
+
+Por último se le asigna a la **Promise** retornada por **findOne** la acción de: Si encuentra el usuario, retornalo en formato **JSON**, si el **user** no existe retorna código **404** con **null**,
+~~~
+if (foundUser)
+    return res.status(200).json(foundUser);
+else
+    return res.status(400).json(null)
+~~~
+
+además se indica que en caso de error se ejecute el siguiente **middleware**:
+
+~~~
+.catch(err => {
+    next(err);
+});
+~~~
+
+#### Listar usuarios
+
+Igual que la busqueda de un usuario, tendremos tres parámetros, solo que esta vez las opciones de filtro de usuarios las obtendremos de la **Query** especificada en la **URL**.
+La **query** esta conformado por clave-valor indicados al final de la URL con el simbolo **?** así:
+
+~~~
+/users/?param=value
+~~~
+
+y sí se desea más de un parámetro es necesario usar el simbolo **&**:
+
+~~~
+/users/?param1=value1&param2=value2
+~~~
+
+En estas opciones permitiremos el uso de paginación. La paginación hace referencia mostrar los datos por trozos (**chuncks**) por ejemplo si la base de datos cuenta con mil usuarios o más, la transferencia de esta información podría complicar el consumo de datos de las aplicaciones web o móviles. Por ese motivo usaremos la configuración predeterminada de retonar de 10 en 10 los usuarios y ordenados por su fecha de creación de manera descendente, es decir, los usuarios más nuevos primero.
+
+Para permitir al usuario cambiar la configuración por defecto, leeremos de **Query** los datos:
+
+1. size: indica el tamaño de la página.
+2. page: indica la página que desea obtener.
+3. sortby: propiedad por la cual se ordena.
+4. sort: criterio de orden.
+
+Todos los parámetos son totalmente opcionales. Nuestra función de buscar **todos** tendrá la siguiente forma:
+
+~~~
+module.exports.getAll = (req, res, next) => {
+    var perPage = Number(req.query.size) || 10,
+        page = req.query.page > 0 ? req.query.page : 0;
+
+    var sortProperty = req.query.sortby || "createdAt",
+        sort = req.query.sort || "desc";
+
+    debug("Usert List",{size:perPage,page, sortby:sortProperty,sort});
+
+    User.find({}, "-password -login_count")
+        .limit(perPage)
+        .skip(perPage * page)
+        .sort({ [sortProperty]: sort})
+        .then((users) => {
+           return res.status(200).json(users)
+        }).catch(err => {
+            next(err);
+        })
+
+}
+~~~
+
+Primero definimos el tamaño de la página y la página que se quiere obtener, por defecto un tamaño de  10 y la página 0
+
+~~~
+var perPage = Number(req.query.size) || 10,
+    page = req.query.page > 0 ? req.query.page : 0;
+~~~
+
+luego obtemos la propiedad para ordenar y el criterio
+
+~~~
+var sortProperty = req.query.sortby || "createdAt",
+    sort = req.query.sort || "desc";
+~~~
+
+que por defecto es la fecha de creación y un orden descendente
+
+#### Creación de un usuario
+
+Para crear un usuario, lo haremos a través del método **POST** lo que hara que en la propiedad **req.body** estarán disponibles los datos a almacenar. Lo primero que haremos es buscar sí el usuario que se desea crear existe previamente, de existir generaremos el error:  "El usuario ya existe" , sino existe almacenaremos los datos. Veremos luego la forma adecuada de almacenar la contraseña de manera segura.
+
+~~~
+module.exports.register = (req, res, next) => {
+    debug("New User", {
+        body: req.body
+    });
+    User.findOne({
+            username: req.body.username
+        }, "-password -login_count")
+        .then((foundUser) => {
+            if (foundUser) {
+                debug("Usuario duplicado");
+                throw new Error(`Usuario duplicado ${req.body.username}`);
+            } else {
+                let newUser = new User({
+                    username: req.body.username,
+                    first_name: req.body.firts_name || "",
+                    last_name: req.body.last_name || "",
+                    email: req.body.email,
+                    password: req.body.password /*TODO: Modificar, hacer hash del password*/
+                });
+                return newUser.save(); // Retornamos la promesa para poder concater una sola linea de then
+            }
+        }).then(user => { // Con el usario almacenado retornamos que ha sido creado con exito
+            return res
+                .header('Location', '/users/' + user._id)
+                .status(201)
+                .json({
+                    _id: user._id
+                });
+        }).catch(err => {
+            next(err);
+        });
+}
+~~~
+
+Para almacenar un usuario es necesario crear un objeto **user** a partir del modelo, de la siguiente forma:
+
+~~~
+let newUser = new User({
+    username: req.body.username,
+    firts_name: req.body.firts_name || "",
+    last_name: req.body.last_name || "",
+    email: req.body.email,
+    password: req.body.password /*TODO: Modificar, hacer hash del password*/
+});
+~~~
+
+Luego ejecutaremos el método **save** y retornamos la **Promise** para permitir concatenar **Promise**
+
+~~~
+return newUser.save();
+~~~
+
+La **Promise** que concatenaremos es la que se ejecuta cuando el usuario fue almacenado el la base de datos:
+
+~~~
+.then(user => { // Con el usario almacenado retornamos que ha sido creado con exito
+    return res
+        .header('Location', '/users/' + user._id)
+        .status(201)
+        .json({
+            _id: user._id
+        });
+})
+~~~
+
+El estado de respuesta de la petición usara el código **201 Created** que indica que la solicitud ha tenido éxito y se ha creado el recurso en el sistema.
+
+#### Actualización de un usuario
+
+Para actualizar un usuario utilizaremos el método **PUT** que semanticamente esta destinado a permitir actualizar cada uno de los campos de nuestro usuario. Cuando el usuario este actualizado retornaremos el nuevo documento, en dado caso no sea posible actualizar por un **username** incorrecto, devolvermos **null**.
+
+~~~
+module.exports.update = (req, res, next) => {
+    debug("Update user", {
+        username: req.params.username,
+        ...req.body
+    });
+
+    let update = {
+        ...req.body
+    };
+
+    User.findOneAndUpdate({
+            username: req.params.username
+        }, update, {
+            new: true
+        })
+        .then((updated) => {
+            if (updated)
+                return res.status(200).json(updated);
+            else
+                return res.status(400).json(null);
+        }).catch(err => {
+            next(err);
+        });
+}
+~~~
+
+Al estar en un método **PUT** los datos podrán ser accesible desde **req.body**, usaremos esos datos para crear un objeto con los nuevos valores de nuestro usuario:
+
+~~~
+    let update = {
+        ...req.body
+    };
+~~~
+
+Los tres puntos, le dicen a **JS** que tome cada propiedad del **req.body** y lo guarde como una propiedad del objeto update, practicamente copiamos el objeto.
+
+Luego buscamos en la base de datos con el **username** indicado en el **PATH** de la petición. Configurando el método para cuando termine de actualizar, nos retorne el objeto nuevo en la variable **updated**
+~~~
+    User.findOneAndUpdate({
+            username: req.params.username
+        }, update, {
+            new: true
+        })
+~~~
+
+Cuando la tarea se complete tendremos dos casos: 
+
+1. Se encontro y actualizo.
+2. No se encontro.
+
+Para el primer caso en el  **callback** retornamos el objeto **update** y código de esta **200** y en el segundo caso un código sw error **400** y **null**.
+
+~~~
+.then((updated) => {
+    if (updated)
+        return res.status(200).json(updated);
+    else
+        return res.status(400).json(null);
+})
+~~~
+
+#### Eliminar un usuario
+
+Para eliminar un usuario utilizaremos el método **delete** y en el **PATH** necesitaremos el **username**, cuando la operación sea existosa retornaremos el usuario eliminado y el código **200**, en el caso que ya este eliminado el recurso retornaremos el código **404**:
+
+~~~
+module.exports.delete = (req, res, next) => {
+
+    debug("Delete user", {
+        username: req.params.username,
+    });
+
+    User.findOneAndDelete({username: req.params.username})
+    .then((data) =>{
+        if (data) res.status(200).json(data);
+        else res.status(404).send();
+    }).catch( err => {
+        next(err);
+    })
+}
+~~~
+
+## Añadiendo las rutas (routers) para ejecutar los controladores
+
+Las **rutas (routers)** son elementos que nos permiten decirle a **express**, que ejecutar de acuerdo a la petición del cliente o usuario. Para poder configurar una ruta son necesarias tres cosas:
+
+1. Método HTTP.
+2. PATH ó dirección.
+3. Uno ó unos middleware a ejecutar.
+
+Además **express** permite modularizar estas configuraciones. En este caso nos aprovecharemos de esa característica y crearemos un archivo por cada ruta principal, es decir, si nuestro sitio o **REST** es capaz de resolver las siguientes peticiones:
+
+~~~
+http://dominio.com/users
+http://dominio.com/users/nestor
+http://dominio.com/posts
+http://dominio.com/post/30
+~~~
+Significa que crearemos dos archivos uno para manejar cualquier variante de **/users** con los diferentes métodos **HTTP** como:
+~~~
+http://dominio.com/users
+http://dominio.com/users/1
+http://dominio.com/users/?q=12&2
+~~~
+
+Además dentro de cada archivo asumiremos que es importado por el **main** de nuestra aplicación y configurado para trabajar con un **PATH**, esto quiere decir, que si dentro del archivo **users.js** escribimos la acción para **/** estaremos haciendo referencia a **/users**. 
+
+Crearemos un archivo llamado **user.js** en la carpeta **router** y configuraremos:
+
+| METHOD |       PATH        |                      ACTION                       |
+| :----: | :---------------: | :-----------------------------------------------: |
+|  GET   |      /users       |             mostrar todo los usuarios             |
+|  GET   | /users/:username  | mostrar el usuario con el username **:username**  |
+|  POST  |      /users       |     Crear un usuario con la información dada      |
+|  PUT   |      /users       |   Actualizar el usuario con la información dada   |
+| DELETE | /users /:username | ELiminar el usuario con el username **:username** |
+
+Para poder lograrlo es necesario importar **express** y obtener el objeto que permite configurar rutas, además el archivo con las acciones, en nuestro caso el controlador **UsersController**.
+
+~~~
+var express = require('express');
+var router = express.Router();
+var userController = require('../controllers/UserController');
+~~~
+
+Para definir la ruta de la primera acción de mostrar todos los usarios escribiremos:
+
+~~~
+router.get('/', userController.getAll);
+~~~
+A través de método **get** del objeto **router** podemos definir todas las rutas para el método **HTTP** **GET**, como primer parámetro de la función, se indica que la acción **userController.getAll** se ejecutara cuando el usuario acceda a la raíz de nuestra ruta, en el caso de este archivo sera **/users** o **/users/**
+
+Para definir una acción para rutas como:
+~~~
+/users/nestor
+/users/user1
+/users/nicj
+/users/nexxtor
+~~~
+
+Es de notar que necesitaremos recuperar lo que varia en ese **PATH** si escribimos como primer parámetro de la función **get** del objeto router ***/:username***  el valor variable sera accesible para la acción a ejecutar usando la propiedad **params** así:
+
+~~~
+req.params.username
+~~~
+Para lo cual dejamos preparado nuestro controlador de usuario, en la sección de creación de controladores de este artículo. Las rutas que usan el mismo método **HTTP** deben definirse de lo más especifico a lo mas general, por ejemplo:
+
+~~~
+router.get('/:username', userController.getOne);
+router.get('/', userController.getAll);
+~~~
+
+La primera es mas especifica por que permite añadir un elemento más al **PATH**, si la ruta o **PATH** se hace mas larga ese un buen criterio para definir el orden. 
+
+Advertencia: la siguiente configuraciones de rutas no funcionarán de manera adecuada:
+~~~
+router.get('/:username', userController.getByUser);
+router.get('/:id', userController.getById);
+~~~
+
+la razón es: No importa si escribimos  **/nextor** o **/100** siempre se ejecutara la primera acción, ya que aunque le asignemos nombre de **username** o **id**, **express** no puede distinguir eso, lo único que permite es indicar que esa parte del **PATH** es variable. Lo correcto para dicha situación es preparar una acción adecuada en nuestro **controller**:
+
+~~~
+router.get('/:criteria', userController.findUser);
+~~~
+
+La función **findUser** debe buscar tanto por **id** como **username**.
+
+Para definir otros método **HTTP**, a usar basta con cambiar el nombre del método y personalizar la ruta, por ejemplo para el método **POST** y el path **/users**
+
+~~~
+router.post('/',userController.register);
+~~~
+
+finalmente nuestro archivo ubicado en **routers/user.js** deberá verse así:
+
+~~~
+var express = require('express');
+var router = express.Router();
+var userController = require('../controllers/UserController');
+
+/* GET users listing. */
+router.get('/:username', userController.getOne);
+router.get('/', userController.getAll);
+
+router.post('/',userController.register);
+router.put('/:username', userController.update);
+router.delete('/:username',userController.delete);
+
+module.exports = router;
+~~~
+
+Al principio de esta sección se menciono que asumimos que dentro del archivo **routers/user.js** estamos configurando la ruta a partir de **/users** para que esto se cumpla es necesario que en el archivo **app.js** importemos nuestra configurion de rutas:
+
+~~~
+var usersRouter = require('./routes/users');
+~~~
+
+luego decirle a **express** como deberá usarse esta configuración, para eso añadiremos:
+
+~~~
+app.use('/users', usersRouter);
+~~~
+
+donde indicamos que la configuración de **usersRouter** sea valida a partir de **/users**, esto lo hacemos así porque permite migrar de manera rápida de **/users** a **/api/users** sin necesidad de cambiar toda la configuración del archivo **routers/user.js**.
+
+Ya con esto podemos probar nuestro **REST** con cualquier cliente HTTP, en este caso usaremos **POSTMAN**, que se puede descargar de https://www.getpostman.com/ 
+
+Una vez instalado y dentro del programa, podemos probar crear un usuario, selecione el método **POST**, en la URL escriba http://localhost:3000/users/ en la pestaña **body** seleccione la opción **x-www-form-urlencoded** y en la parte inferior especifique los datos con los nombres de las propiedades del objeto usuario. Al presionar el botón **enviar**, en el área de respuesta nos mostrara el **id** de objeto creado. Los que se vera así:
+
+![Postman](asset/images/postman.png)
 

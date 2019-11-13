@@ -4,7 +4,8 @@ const mongoose = require('mongoose'),
 var UserSchema = Schema({
     username: {
         type: String,
-        required: true
+        required: true,
+       unique:true
     },
     first_name: String,
     last_name: String,
