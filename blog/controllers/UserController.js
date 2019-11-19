@@ -44,7 +44,7 @@ module.exports.getAll = (req, res, next) => {
             return res.status(200).json(users)
         }).catch(err => {
             next(err);
-        })
+        });
 
 }
 
@@ -73,10 +73,10 @@ module.exports.register = (req, res, next) => {
             }
         }).then(user => {
             return res
-                .header('Location', '/users/' + user._id)
+                .header('Location', '/users/' + user.username)
                 .status(201)
                 .json({
-                    _id: user._id
+                    username: user.username
                 });
         }).catch(err => {
             next(err);

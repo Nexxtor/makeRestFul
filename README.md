@@ -1,11 +1,13 @@
 # Crear un RestFul con Express y MongoDB
+
+# Contenido
 - [Crear un RestFul con Express y MongoDB](#crear-un-restful-con-express-y-mongodb)
-  - [RestFul API](#restful-api)
-    - [Definición](#definici%c3%b3n)
+- [Contenido](#contenido)
+  - [Definición](#definici%c3%b3n)
     - [Ventajas](#ventajas)
     - [Desventajas](#desventajas)
-  - [Objetivo](#objetivo)
-  - [Recursos necesarios](#recursos-necesarios)
+- [Objetivo](#objetivo)
+- [Recursos necesarios](#recursos-necesarios)
 - [Preparando el entorno](#preparando-el-entorno)
   - [Estructura de directorio](#estructura-de-directorio)
   - [Una tonelada de librerías I](#una-tonelada-de-librer%c3%adas-i)
@@ -20,17 +22,20 @@
   - [Conexión con el servidor de MongoDB](#conexi%c3%b3n-con-el-servidor-de-mongodb)
     - [Promesas VS Callbacks](#promesas-vs-callbacks)
   - [Definiendo modelos en Mongoose](#definiendo-modelos-en-mongoose)
+    - [Modelo User](#modelo-user)
+    - [Modelo Post](#modelo-post)
 - [Creando controladores](#creando-controladores)
-  - [Buscar un usuario](#buscar-un-usuario)
-  - [Listar usuarios](#listar-usuarios)
-  - [Creación de un usuario](#creaci%c3%b3n-de-un-usuario)
-  - [Actualización de un usuario](#actualizaci%c3%b3n-de-un-usuario)
-  - [Eliminar un usuario](#eliminar-un-usuario)
-- [Añadiendo las rutas (routers) para ejecutar los controladores](#a%c3%b1adiendo-las-rutas-routers-para-ejecutar-los-controladores)
+  - [Creación UserController](#creaci%c3%b3n-usercontroller)
+    - [Buscar un usuario](#buscar-un-usuario)
+    - [Listar usuarios](#listar-usuarios)
+    - [Creación de un usuario](#creaci%c3%b3n-de-un-usuario)
+    - [Actualización de un usuario](#actualizaci%c3%b3n-de-un-usuario)
+    - [Eliminar un usuario](#eliminar-un-usuario)
+  - [Creación de PostController](#creaci%c3%b3n-de-postcontroller)
+- [Añadiendo rutas](#a%c3%b1adiendo-rutas)
+- [Pruebas REST](#pruebas-rest)
 
-## RestFul API
-
-### Definición
+## Definición
 
 Un RESTFul API permite realizar peticiones HTTP de tipo GET, PUT, POST y DELETE; en palabras más simples, es una aplicación que permite consultar y manipular recursos a través de un estándar de comunicación, por ejemplo, si queremos obtener todos los artículos de una tienda en línea, bastaría con consultar la url */article* con el metodo GET, si se deseara la información completa de un artículo en específico, */article/1*, y así sucesivamente. 
 
@@ -48,11 +53,11 @@ Un REST tiene una configuración uniforme de acceso a recursos, no guarda el est
 
 1. Requiere tiempo adaptar proyectos WEB tradicionales.
 
-## Objetivo
+# Objetivo
 
 En este pequeño artículo pasaremos por el proceso de construcción de un REST API para un blog personal, que tiene como objetivo estar disponible a futuro en diferentes plataformas móviles, web y de escritorio (¡Un proyecto, pequeño! ;) ).
 
-## Recursos necesarios
+# Recursos necesarios
 
 - NodeJs, npm
 - MongoDb
@@ -670,6 +675,8 @@ Del Post almacenaremos:
 
 Como podrán notar tendremos dos colecciones: usuarios y posts, los comentarios serán guardados como un subdocumento.
 
+### Modelo User
+
 Para definir los modelos, empezaremos por los usuarios creando en la carpeta model el archivo **user.js** con el siguiente código:
 
 ~~~JS
@@ -753,6 +760,8 @@ new User({
 }).save(); // ejecutar el método save
 ~~~
 
+### Modelo Post
+
 Antes de continuar con la manipulación de datos es necesario definir el modelo post, en el archivo **post.js** dentro de la carpeta models, con el siguiente código:
 
 ~~~JS
@@ -782,6 +791,10 @@ var PostSchema = new Schema({
     state: {
         type: String,
         enum: ['draft', 'published', 'private']
+    },
+    content : {
+        type: String,
+        required: true
     }
 }, {
     timestamps: true
@@ -813,29 +826,35 @@ En la base de datos este objeto, sin comentarios, se ve almacenado así:
 
 ~~~json
 {
-  "_id": {
-      "$oid":"5dc9c4d4a4ed0f66e1540999"
+  "_id":
+  {
+    "$oid": "5dcd7cabc31d4665204f10ec"
   },
-  "tags":["tutorial","express","jwt"],
-  "title":"Prueba titulo",
+  "tags":[
+      "tag1",
+      "tag2",
+      "tag3"
+  ],
+  "title":"Post 1",
   "author": {
-    "$oid":"5dc9c4d4a4ed0f66e1540998"
+      "$oid":"5dcd6f9cfc7e774305670dd9"
   },
   "state":"draft",
+  "content":"Contenido",
   "comments":[],
-  "createdAt":{
-    "$date":{ 
-      "$numberLong":"1573504212674"
+  "createdAt": {
+    "$date":{
+      "$numberLong":"1573747883318"
     }
   },
   "updatedAt": {
     "$date":{ 
-      "$numberLong":"1573504212674"
+      "$numberLong":"1573747883318"
     }
   },
-  "__v": {
-     "$numberInt":"0"
-     }
+  "__v":{
+    "$numberInt":"0"
+  }
 }
 ~~~
 
@@ -863,6 +882,8 @@ module.exports = { propiedad: function() {} }
 
 exportamos un objeto completo, cada propiedad de este objeto es accesible por su nombre desde otro archivo.
 
+## Creación UserController
+
 En el controlador de Usuario definiremos 5 acciones:
 
 1. Buscar un usuario por su **username**
@@ -888,11 +909,11 @@ var User = require('../models/user');
 var debug = require('debug')('blog:user_controller');
 ~~~
 
-## Buscar un usuario
+### Buscar un usuario
 
 Para buscar un usuario, lo haremos a través del modelo usuario ejecutando el metodo **findOne**, que dado un criterio de busqueda nos devuelve el primer elemento que encuentre, además en las opciones de **findOne** indicaremos que no queremos seleccionar el **password** ni **login_count** por motivos de seguridad. 
 
-La función a declarar tendra tres parámetros:
+La función a declarar tendrá tres parámetros:
 
 1. **req** Contiene la información de la petición **HTTP**.
 2. **res** Nos permite construir una respuesta **HTTP**.
@@ -950,7 +971,7 @@ además se indica que en caso de error se ejecute el siguiente **middleware**:
 });
 ~~~
 
-## Listar usuarios
+### Listar usuarios
 
 Igual que la busqueda de un usuario, tendremos tres parámetros, solo que esta vez las opciones de filtro de usuarios las obtendremos de la **Query** especificada en la **URL**.
 La **query** esta conformado por clave-valor indicados al final de la URL con el simbolo **?** así:
@@ -1015,7 +1036,7 @@ var sortProperty = req.query.sortby || "createdAt",
 
 que por defecto es la fecha de creación y un orden descendente
 
-## Creación de un usuario
+### Creación de un usuario
 
 Para crear un usuario, lo haremos a través del método **POST** lo que hara que en la propiedad **req.body** estarán disponibles los datos a almacenar. Lo primero que haremos es buscar sí el usuario que se desea crear existe previamente, de existir generaremos el error:  "El usuario ya existe" , sino existe almacenaremos los datos. Veremos luego la forma adecuada de almacenar la contraseña de manera segura.
 
@@ -1046,7 +1067,7 @@ module.exports.register = (req, res, next) => {
                 .header('Location', '/users/' + user._id)
                 .status(201)
                 .json({
-                    _id: user._id
+                    username: user.username
                 });
         }).catch(err => {
             next(err);
@@ -1080,14 +1101,14 @@ La **Promise** que concatenaremos es la que se ejecuta cuando el usuario fue alm
         .header('Location', '/users/' + user._id)
         .status(201)
         .json({
-            _id: user._id
+            username: user.username
         });
 })
 ~~~
 
 El estado de respuesta de la petición usara el código **201 Created** que indica que la solicitud ha tenido éxito y se ha creado el recurso en el sistema.
 
-## Actualización de un usuario
+### Actualización de un usuario
 
 Para actualizar un usuario utilizaremos el método **PUT** que semanticamente esta destinado a permitir actualizar cada uno de los campos de nuestro usuario. Cuando el usuario este actualizado retornaremos el nuevo documento, en dado caso no sea posible actualizar por un **username** incorrecto, devolvermos **null**.
 
@@ -1153,7 +1174,7 @@ Para el primer caso en el  **callback** retornamos el objeto **update** y códig
 })
 ~~~
 
-## Eliminar un usuario
+### Eliminar un usuario
 
 Para eliminar un usuario utilizaremos el método **delete** y en el **PATH** necesitaremos el **username**, cuando la operación sea existosa retornaremos el usuario eliminado y el código **200**, en el caso que ya este eliminado el recurso retornaremos el código **404**:
 
@@ -1174,7 +1195,26 @@ module.exports.delete = (req, res, next) => {
 }
 ~~~
 
-# Añadiendo las rutas (routers) para ejecutar los controladores
+## Creación de PostController
+
+Continuando con el criterio de resposabilidad única, porgramaremos todas las acciones para la modificación la manipulación de un **Post** del blog. Las acciones que permitiremos son:
+
+1. Obtener un Post.
+2. Buscar Post.
+3. Obtener todos los Post.
+4. Crear un Post.
+5. Actualizar un Post.
+6. Eliminiar un Post.
+7. Agregar un comentario a un Post.
+
+La acción de agregar un comentario, se deja fuera de los comentarios, ya se necesita verificar que el usuario que haga los comentarios exista.
+
+| ACTION        | METHOD |      PATH      | OPTIONS                |
+| :------------ | :----: | :------------: | :--------------------- |
+| Buscar        |  GET   | /posts/:search | Una cadena de busqueda |
+| Obtener todos |
+
+# Añadiendo rutas
 
 Las **rutas (routers)** son elementos que nos permiten decirle a **express**, que ejecutar de acuerdo a la petición del cliente o usuario. Para poder configurar una ruta son necesarias tres cosas:
 
@@ -1298,9 +1338,23 @@ app.use('/users', usersRouter);
 
 donde indicamos que la configuración de **usersRouter** sea valida a partir de **/users**, esto lo hacemos así porque permite migrar de manera rápida de **/users** a **/api/users** sin necesidad de cambiar toda la configuración del archivo **routers/user.js**.
 
-Ya con esto podemos probar nuestro **REST** con cualquier cliente HTTP, en este caso usaremos **POSTMAN**, que se puede descargar de https://www.getpostman.com/ 
 
-Una vez instalado y dentro del programa, podemos probar crear un usuario, selecione el método **POST**, en la URL escriba http://localhost:3000/users/ en la pestaña **body** seleccione la opción **x-www-form-urlencoded** y en la parte inferior especifique los datos con los nombres de las propiedades del objeto usuario. Al presionar el botón **enviar**, en el área de respuesta nos mostrara el **id** de objeto creado. Los que se vera así:
+# Pruebas REST
+
+Ya con esto podemos probar nuestro **REST** con cualquier cliente HTTP, en este caso usaremos **POSTMAN**, que se puede descargar de https://www.getpostman.com/. 
+
+Una vez instalado y dentro del programa:
+
+1. Seleccionar el método **POST**.
+2. En la URL escribir http://localhost:3000/users/ 
+3. En la pestaña  **body** seleccionar la opción **x-www-form-urlencoded**.
+4. En el editor de **Key** y **Value** agregar las claves:
+   1. username:nextor
+   2. first_name:Néstor Santiago
+   3. last_name:Aldana Rodriguez
+   4. email:nestor.aldana1@gmail.com
+   5. password:password
+5. Presionar el botón **enviar**, en el área de respuesta nos mostrara el **id** de objeto creado. Lo que se vera así:
 
 ![Postman](asset/images/postman.png)
 

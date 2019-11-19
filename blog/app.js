@@ -9,6 +9,7 @@ var debug = require('debug')('blog:database');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var posts = require('./routes/posts');
 
 // Conect to database
 
@@ -24,6 +25,8 @@ mongoose.connect(process.env.MONGO_URI, {
     debug(err);
     process.exit(1);
   });
+
+mongoose.set('debug', true);
 
 var app = express();
 
@@ -47,6 +50,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/posts',posts);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

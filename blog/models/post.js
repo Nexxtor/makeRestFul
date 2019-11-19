@@ -24,9 +24,26 @@ var PostSchema = new Schema({
     state: {
         type: String,
         enum: ['draft', 'published', 'private']
+    },
+    content : {
+        type: String,
+        required: true
     }
 }, {
     timestamps: true
+});
+
+
+PostSchema.index({
+  title: 'text',
+  content: 'text',
+  tags: 'text'
+}, {
+  weights: {
+    title: 2,
+    content: 1,
+    tags: 3
+  },
 });
 
 module.exports = mongoose.model("Post", PostSchema);
