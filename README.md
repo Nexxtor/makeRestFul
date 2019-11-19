@@ -32,6 +32,7 @@
     - [Actualización de un usuario](#actualizaci%c3%b3n-de-un-usuario)
     - [Eliminar un usuario](#eliminar-un-usuario)
   - [Creación de PostController](#creaci%c3%b3n-de-postcontroller)
+  - [Incompleto](#incompleto)
 - [Añadiendo rutas](#a%c3%b1adiendo-rutas)
 - [Pruebas REST](#pruebas-rest)
 
@@ -1213,6 +1214,11 @@ La acción de agregar un comentario, se deja fuera de los comentarios, ya se nec
 | :------------ | :----: | :------------: | :--------------------- |
 | Buscar        |  GET   | /posts/:search | Una cadena de busqueda |
 | Obtener todos |
+
+
+-----
+Incompleto
+-----
 
 # Añadiendo rutas
 
