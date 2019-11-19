@@ -26,7 +26,7 @@ mongoose.connect(process.env.MONGO_URI, {
     process.exit(1);
   });
 
-mongoose.set('debug', true);
+mongoose.set('debug',process.env.NODE_ENV === 'development');
 
 var app = express();
 

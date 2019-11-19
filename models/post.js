@@ -18,9 +18,7 @@ var PostSchema = new Schema({
         },
         content: { type: String, require: true }
     }],
-    tags: [
-        String
-    ],
+    tags: { type: [String], index: true } ,
     state: {
         type: String,
         enum: ['draft', 'published', 'private']
@@ -37,7 +35,6 @@ var PostSchema = new Schema({
 PostSchema.index({
   title: 'text',
   content: 'text',
-  tags: 'text'
 }, {
   weights: {
     title: 2,
